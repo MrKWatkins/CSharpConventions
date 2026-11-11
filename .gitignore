@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+artifacts/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+**/.idea/**/workspace.xml
+**/.idea/**/mcp.json

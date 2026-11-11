@@ -1,0 +1,54 @@
+<Project>
+  <PropertyGroup>
+    <_ConventionsTestProject>$(IsTestProject)</_ConventionsTestProject>
+    <_ConventionsRepositoryRoot>$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'ReadMe.md'))</_ConventionsRepositoryRoot>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_ConventionsTestProject)' == 'true'">
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <NoWarn>$(NoWarn);CS1591;CS0168;CS0169;CS0219;CS0414</NoWarn>
+  </PropertyGroup>
+  <!-- Package targets load after global config discovery. -->
+  <ItemGroup>
+    <EditorConfigFiles Include="$(MSBuildThisFileDirectory)../config/MrKWatkins.CSharpConventions.globalconfig" />
+    <CompilerVisibleProperty Include="RootNamespace" />
+    <CompilerVisibleProperty Include="ProjectDir" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.Diagnostics.Contracts" />
+    <Using Include="System.Diagnostics.Contracts.PureAttribute" Alias="PureAttribute" />
+  </ItemGroup>
+  <ItemGroup Condition="'@(PackageReference->WithMetadataValue('Identity', 'JetBrains.Annotations'))' != ''">
+    <Using Include="JetBrains.Annotations" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(_ConventionsTestProject)' != 'true'">
+    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(_ConventionsTestProject)' == 'true'">
+    <EditorConfigFiles Include="$(MSBuildThisFileDirectory)../config/Tests.globalconfig" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(_ConventionsTestProject)' == 'true' And '@(PackageReference->WithMetadataValue('Identity', 'MrKWatkins.Assertions'))' != ''">
+    <Using Include="MrKWatkins.Assertions" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(_ConventionsTestProject)' == 'true' And '@(PackageReference->WithMetadataValue('Identity', 'NUnit'))' != ''">
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <EditorConfigFiles Include="$(MSBuildThisFileDirectory)../config/Debug.globalconfig" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+    <Title Condition="'$(Title)' == ''">$(MSBuildProjectName)</Title>
+    <PackageLicenseExpression Condition="'$(PackageLicenseExpression)' == ''">GPL-3.0-only</PackageLicenseExpression>
+    <PackageIcon Condition="'$(PackageIcon)' == ''">Icon.png</PackageIcon>
+    <PackageReadmeFile Condition="'$(PackageReadmeFile)' == ''">ReadMe.md</PackageReadmeFile>
+    <PublishRepositoryUrl Condition="'$(PublishRepositoryUrl)' == ''">true</PublishRepositoryUrl>
+    <EmbedUntrackedSources Condition="'$(EmbedUntrackedSources)' == ''">true</EmbedUntrackedSources>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)../assets/Icon.png" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="$(_ConventionsRepositoryRoot)/ReadMe.md" Pack="true" PackagePath="/" Visible="false" />
+  </ItemGroup>
+  <Target Name="ValidateConventionsReadme" BeforeTargets="GenerateNuspec" Condition="'$(IsPackable)' == 'true'">
+    <Error Condition="'$(_ConventionsRepositoryRoot)' == ''" Text="Add ReadMe.md at the repository root before packing." />
+  </Target>
+</Project>

@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../ReadMe.md" />
+    <File Path="../RULES.md" />
+    <File Path="../skills/csharp-conventions/SKILL.md" />
+    <File Path="../TODO.md" />
+    <File Path="../LICENSE" />
+    <File Path="../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../AGENTS.md" />
+    <File Path="../pyproject.toml" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <File Path="../tests/test_conventions.py" />
+    <File Path="../tests/Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/Workflows/">
+    <File Path="../.github/workflows/build.yml" />
+    <File Path="../.github/workflows/release.yml" />
+    <File Path="../.github/workflows/dependabot-merge.yml" />
+  </Folder>
+  <Project Path="MrKWatkins.CSharpConventions/MrKWatkins.CSharpConventions.csproj" />
+</Solution>

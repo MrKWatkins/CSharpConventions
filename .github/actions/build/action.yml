@@ -1,0 +1,59 @@
+name: Build and Test
+description: Validate the packed conventions against real consumers.
+inputs:
+  version:
+    description: Optional package version override.
+runs:
+  using: composite
+  steps:
+    - uses: MrKWatkins/build/dotnet/setup@main
+    - uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: true
+    - shell: bash
+      run: uv sync --locked
+    - name: Check Python
+      shell: bash
+      run: |
+        uv run --frozen ruff check .
+        uv run --frozen ruff format --check .
+    - name: Check workflows
+      shell: bash
+      run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -color
+    - name: Pack conventions
+      shell: python
+      env:
+        CONVENTIONS_VERSION: ${{ inputs.version }}
+      run: |
+        import os
+        import subprocess
+        from pathlib import Path
+        from xml.etree import ElementTree
+        project = Path("src/MrKWatkins.CSharpConventions/MrKWatkins.CSharpConventions.csproj")
+        version = os.environ["CONVENTIONS_VERSION"] or ElementTree.parse(project).findtext("./PropertyGroup/Version")
+        subprocess.run([
+            "dotnet", "pack", "src/CSharpConventions.slnx", "--configuration", "Release",
+            f"-p:PackageVersion={version}", "--output", "artifacts/packages"
+        ], check=True)
+        package = Path(f"artifacts/packages/MrKWatkins.CSharpConventions.{version}.nupkg").resolve()
+        with open(os.environ["GITHUB_ENV"], "a") as output:
+            output.write(f"CONVENTIONS_VERSION={version}\nCONVENTIONS_PACKAGE={package}\n")
+    - name: Test package consumers
+      id: tests
+      shell: bash
+      run: uv run --frozen pytest --junitxml=artifacts/test-results/pytest.xml
+    - uses: MrKWatkins/build/reports@main
+      if: (success() || failure()) && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+      with:
+        tests: artifacts/test-results/pytest.xml
+        coverage: ''
+    - uses: MrKWatkins/build/reports/upload@main
+      if: (success() || failure()) && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+      with:
+        coverage: 'false'
+    - uses: actions/upload-artifact@v7
+      with:
+        name: packages
+        path: artifacts/packages/*.nupkg
+        if-no-files-found: error
+        retention-days: 14

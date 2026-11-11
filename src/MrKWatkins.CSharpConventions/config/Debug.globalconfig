@@ -1,0 +1,9 @@
+is_global = true
+global_level = 300
+
+dotnet_diagnostic.IDE0051.severity = none
+dotnet_diagnostic.IDE0052.severity = none
+dotnet_diagnostic.IDE0059.severity = none
+dotnet_diagnostic.IDE0060.severity = none
+
+dotnet_diagnostic.CA1823.severity = none

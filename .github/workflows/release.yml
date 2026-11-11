@@ -1,0 +1,36 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Optional version without v. Blank increments the latest release minor version.
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  release:
+    name: Release
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: MrKWatkins/build/release/version@main
+        id: version
+        with:
+          version: ${{ inputs.version }}
+      - uses: ./.github/actions/build
+        with:
+          version: ${{ steps.version.outputs.version }}
+      - uses: MrKWatkins/build/dotnet/publish@main
+        with:
+          nuget-user: MrKWatkins
+      - uses: MrKWatkins/build/release/create@main
+        with:
+          version: ${{ steps.version.outputs.version }}
+          commit: ${{ github.sha }}
